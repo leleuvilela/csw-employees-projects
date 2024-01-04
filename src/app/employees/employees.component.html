@@ -1,0 +1,46 @@
+<div class="m-3">
+  <div class="flex gap-2">
+    <button mat-raised-button (click)="openDialog()">
+      <mat-icon fontIcon="add"></mat-icon>
+      Add
+    </button>
+    <button mat-raised-button>
+      <mat-icon fontIcon="edit"></mat-icon>
+      Edit
+    </button>
+    <button mat-raised-button>
+      <mat-icon fontIcon="delete"></mat-icon>
+      Delete
+    </button>
+  </div>
+
+  <ng-container *ngIf="employees$ | async as employees">
+
+    <table mat-table [dataSource]="employees">
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef>Name</th>
+        <td mat-cell *matCellDef="let employee">{{ employee.name }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="entryDate">
+        <th mat-header-cell *matHeaderCellDef>Start Date</th>
+        <td mat-cell *matCellDef="let employee">{{ employee.entryDate | date }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let employee">
+          <button mat-icon-button>
+            <mat-icon fontIcon="edit"></mat-icon>
+          </button>
+          <button mat-icon-button>
+            <mat-icon fontIcon="playlist_add"></mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+    </table>
+  </ng-container>
+</div>
