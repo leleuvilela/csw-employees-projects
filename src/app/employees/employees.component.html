@@ -15,7 +15,6 @@
   </div>
 
   <ng-container *ngIf="employees$ | async as employees">
-
     <table mat-table [dataSource]="employees">
       <ng-container matColumnDef="name">
         <th mat-header-cell *matHeaderCellDef>Name</th>
@@ -30,7 +29,7 @@
       <ng-container matColumnDef="actions">
         <th mat-header-cell *matHeaderCellDef></th>
         <td mat-cell *matCellDef="let employee">
-          <button mat-icon-button>
+          <button mat-icon-button (click)="openDialog(employee.id)">
             <mat-icon fontIcon="edit"></mat-icon>
           </button>
           <button mat-icon-button>

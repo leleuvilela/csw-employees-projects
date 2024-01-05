@@ -1,5 +1,11 @@
 import { Component, Inject } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import {
+  FormControl,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import {
@@ -10,35 +16,99 @@ import {
   MatDialogRef,
   MAT_DIALOG_DATA,
 } from '@angular/material/dialog';
+import { MatRadioModule } from '@angular/material/radio';
 import { MatInputModule } from '@angular/material/input';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
-
-import { Employee } from '../models/employee';
+import { CommonModule } from '@angular/common';
+import { EmployeeService } from '../services/employee.service';
+import { api } from '../models/api.model';
+import { RoleService } from '../services/role.service';
+import { Observable } from 'rxjs';
+import { PlatoonService } from '../services/platoon.service';
+import { MatSelectModule } from '@angular/material/select';
 
 @Component({
   selector: 'app-employee-create-dialog',
   standalone: true,
   imports: [
+    CommonModule,
     MatFormFieldModule,
     MatInputModule,
     FormsModule,
+    ReactiveFormsModule,
     MatButtonModule,
     MatDialogTitle,
     MatDialogContent,
     MatDialogActions,
     MatDialogClose,
-    MatDatepickerModule,
-    MatNativeDateModule,
+    MatRadioModule,
+    MatSelectModule,
   ],
   templateUrl: './employee-create-dialog.component.html',
   styleUrl: './employee-create-dialog.component.scss',
 })
 export class EmployeeCreateDialogComponent {
+  roles$!: Observable<api.roles.Role[]>;
+  platoons$!: Observable<api.platoons.Platoon[]>;
+  employeeFormGroup = new FormGroup({
+    name: new FormControl('', { nonNullable: true }),
+    entryDate: new FormControl('', { nonNullable: true }),
+    platoonId: new FormControl('', { nonNullable: true }),
+    roleId: new FormControl('', { nonNullable: true }),
+  });
+
   constructor(
     public dialogRef: MatDialogRef<EmployeeCreateDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public employee?: Employee
+    private employeeService: EmployeeService,
+    private roleService: RoleService,
+    private platoonService: PlatoonService,
+    @Inject(MAT_DIALOG_DATA) public employeeId?: number
   ) {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.getRoles();
+    this.getPlatoons();
+
+    if (this.employeeId) {
+      this.employeeService.getEmployee(this.employeeId).subscribe((data) => {
+        this.employeeFormGroup.setValue({
+          name: data.name,
+          entryDate: data.entryDate,
+          platoonId: data.platoonId,
+          roleId: data.roleId,
+        });
+      });
+    }
+  }
+
+  getRoles() {
+    this.roles$ = this.roleService.getRoles();
+  }
+
+  getPlatoons() {
+    this.platoons$ = this.platoonService.getPlatoons();
+  }
+
+  onSaveClick(): void {
+    if (!this.employeeId) {
+      this.employeeService
+        .createEmployee(this.employeeFormGroup.getRawValue())
+        .subscribe((data) => {
+          console.log(data);
+          this.dialogRef.close();
+        });
+
+      return;
+    }
+
+    this.employeeService
+      .updateEmployee(this.employeeId, this.employeeFormGroup.getRawValue())
+      .subscribe((data) => {
+        console.log(data);
+        this.dialogRef.close();
+      });
+  }
+
+  onCancelClick(): void {
+    this.dialogRef.close();
+  }
 }

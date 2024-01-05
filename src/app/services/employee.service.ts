@@ -1,13 +1,13 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Employee } from '../models/employee';
 import { Observable } from 'rxjs';
+import { api } from '../models/api.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class EmployeeService {
-  private baseUrl = '/api/Employees';
+  private baseUrl = 'http://localhost:3000/api/employees';
 
   httpOptions = {
     headers: new HttpHeaders({ 'Content-Type': 'application/json' })
@@ -15,23 +15,23 @@ export class EmployeeService {
 
   constructor(private http: HttpClient) { }
 
-  getEmployees(): Observable<Employee[]> {
-    return this.http.get<Employee[]>(`${this.baseUrl}`);
+  getEmployees(): Observable<api.employees.Employee[]> {
+    return this.http.get<api.employees.Employee[]>(`${this.baseUrl}`);
   }
 
-  getEmployee(id: number): Observable<Employee> {
-    return this.http.get<Employee>(`${this.baseUrl}/${id}`);
+  getEmployee(id: number): Observable<api.employees.Employee> {
+    return this.http.get<api.employees.Employee>(`${this.baseUrl}/${id}`);
   }
 
-  createEmployee(employee: Employee): Observable<Employee> {
-    return this.http.post<Employee>(`${this.baseUrl}`, employee, this.httpOptions);
+  createEmployee(employee: api.employees.CreateEmployeeDto): Observable<api.employees.Employee> {
+    return this.http.post<api.employees.Employee>(`${this.baseUrl}`, employee, this.httpOptions);
   }
 
-  updateEmployee(employee: Employee): Observable<Employee> {
-    return this.http.put<Employee>(`${this.baseUrl}/${employee.id}`, employee, this.httpOptions);
+  updateEmployee(id: number, employee: api.employees.UpdateEmployeeDto): Observable<api.employees.Employee> {
+    return this.http.patch<api.employees.Employee>(`${this.baseUrl}/${id}`, employee, this.httpOptions);
   }
 
-  deleteEmployee(id: number): Observable<Employee> {
-    return this.http.delete<Employee>(`${this.baseUrl}/${id}`);
+  deleteEmployee(id: number): Observable<never> {
+    return this.http.delete<never>(`${this.baseUrl}/${id}`);
   }
 }

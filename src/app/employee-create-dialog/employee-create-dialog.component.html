@@ -1,13 +1,41 @@
 <h1 mat-dialog-title>Manage Employee</h1>
 <div mat-dialog-content>
-  <form>
+  <form class="flex flex-col" [formGroup]="employeeFormGroup">
     <mat-form-field>
       <mat-label>Name</mat-label>
-      <input matInput>
+      <input matInput formControlName="name" />
     </mat-form-field>
+    <mat-form-field>
+      <mat-label>Start date</mat-label>
+      <input matInput formControlName="entryDate" />
+    </mat-form-field>
+    <ng-container *ngIf="roles$ | async as roles">
+      <div class="mb-3">
+        <label id="role">Role</label>
+        <mat-radio-group
+          aria-labelledby="role"
+          formControlName="roleId"
+        >
+          <mat-radio-button [value]="">None</mat-radio-button>
+          @for (role of roles; track role.id) {
+          <mat-radio-button [value]="role.id">{{ role.name }}</mat-radio-button>
+          }
+        </mat-radio-group>
+      </div>
+    </ng-container>
+    <ng-container *ngIf="platoons$ | async as platoons">
+      <mat-form-field>
+        <mat-label>Platoon</mat-label>
+        <mat-select formControlName="platoonId">
+          @for (platoon of platoons; track platoon.id) {
+          <mat-option [value]="platoon.id">{{ platoon.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </ng-container>
   </form>
 </div>
 <div mat-dialog-actions>
-  <button mat-button>Cancel</button>
-  <button mat-button>Save</button>
+  <button mat-button (click)="onCancelClick()">Cancel</button>
+  <button mat-button (click)="onSaveClick()">Save</button>
 </div>
