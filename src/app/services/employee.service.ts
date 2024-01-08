@@ -1,6 +1,6 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, shareReplay } from 'rxjs';
 import { api } from '../models/api.model';
 
 @Injectable({
@@ -16,7 +16,9 @@ export class EmployeeService {
   constructor(private http: HttpClient) { }
 
   getEmployees(): Observable<api.employees.Employee[]> {
-    return this.http.get<api.employees.Employee[]>(`${this.baseUrl}`);
+    return this.http.get<api.employees.Employee[]>(`${this.baseUrl}`).pipe(
+      shareReplay(1)
+    );
   }
 
   getEmployee(id: number): Observable<api.employees.Employee> {

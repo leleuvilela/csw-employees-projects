@@ -1,6 +1,6 @@
 import { HttpHeaders, HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, shareReplay } from 'rxjs';
 import { api } from '../models/api.model';
 
 @Injectable({
@@ -16,7 +16,7 @@ export class PlatoonService {
   constructor(private http: HttpClient) { }
 
   getPlatoons(): Observable<api.platoons.Platoon[]> {
-    return this.http.get<api.platoons.Platoon[]>(`${this.baseUrl}`);
+    return this.http.get<api.platoons.Platoon[]>(`${this.baseUrl}`).pipe(shareReplay(1));
   }
 
   getPlatoon(id: number): Observable<api.platoons.Platoon> {

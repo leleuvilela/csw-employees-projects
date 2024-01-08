@@ -1,45 +1,55 @@
 <div class="m-3">
-  <div class="flex gap-2">
-    <button mat-raised-button (click)="openDialog()">
-      <mat-icon fontIcon="add"></mat-icon>
+  <div class="flex justify-end gap-2">
+    <button mat-raised-button color="primary" (click)="openDialog()">
+      <mat-icon fontIcon="add" ></mat-icon>
       Add
     </button>
-    <button mat-raised-button>
+    <!-- <button mat-raised-button>
       <mat-icon fontIcon="edit"></mat-icon>
       Edit
     </button>
     <button mat-raised-button>
       <mat-icon fontIcon="delete"></mat-icon>
       Delete
-    </button>
+    </button> -->
   </div>
 
-  <ng-container *ngIf="employees$ | async as employees">
-    <table mat-table [dataSource]="employees">
-      <ng-container matColumnDef="name">
-        <th mat-header-cell *matHeaderCellDef>Name</th>
-        <td mat-cell *matCellDef="let employee">{{ employee.name }}</td>
-      </ng-container>
+  <table mat-table [dataSource]="employees">
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef>Name</th>
+      <td mat-cell *matCellDef="let employee">{{ employee.name }}</td>
+    </ng-container>
 
-      <ng-container matColumnDef="entryDate">
-        <th mat-header-cell *matHeaderCellDef>Start Date</th>
-        <td mat-cell *matCellDef="let employee">{{ employee.entryDate | date }}</td>
-      </ng-container>
+    <ng-container matColumnDef="entryDate">
+      <th mat-header-cell *matHeaderCellDef>Start Date</th>
+      <td mat-cell *matCellDef="let employee">
+        {{ employee.entryDate | date }}
+      </td>
+    </ng-container>
 
-      <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef></th>
-        <td mat-cell *matCellDef="let employee">
-          <button mat-icon-button (click)="openDialog(employee.id)">
-            <mat-icon fontIcon="edit"></mat-icon>
-          </button>
-          <button mat-icon-button>
-            <mat-icon fontIcon="playlist_add"></mat-icon>
-          </button>
-        </td>
-      </ng-container>
+    <ng-container matColumnDef="role">
+      <th mat-header-cell *matHeaderCellDef>Role</th>
+      <td mat-cell *matCellDef="let employee">{{ employee.role.name }}</td>
+    </ng-container>
 
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-    </table>
-  </ng-container>
+    <ng-container matColumnDef="platoon">
+      <th mat-header-cell *matHeaderCellDef>Platoon</th>
+      <td mat-cell *matCellDef="let employee">{{ employee.platoon.name }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef></th>
+      <td mat-cell *matCellDef="let employee">
+        <button mat-icon-button (click)="openDialog(employee.id)">
+          <mat-icon fontIcon="edit"></mat-icon>
+        </button>
+        <button mat-icon-button (click)="deleteEmployee(employee.id)">
+          <mat-icon fontIcon="delete"></mat-icon>
+        </button>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+  </table>
 </div>

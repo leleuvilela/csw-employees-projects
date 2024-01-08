@@ -9,12 +9,9 @@ import {
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import {
-  MatDialogTitle,
-  MatDialogContent,
-  MatDialogActions,
-  MatDialogClose,
   MatDialogRef,
   MAT_DIALOG_DATA,
+  MatDialogModule,
 } from '@angular/material/dialog';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatInputModule } from '@angular/material/input';
@@ -36,10 +33,7 @@ import { MatSelectModule } from '@angular/material/select';
     FormsModule,
     ReactiveFormsModule,
     MatButtonModule,
-    MatDialogTitle,
-    MatDialogContent,
-    MatDialogActions,
-    MatDialogClose,
+    MatDialogModule,
     MatRadioModule,
     MatSelectModule,
   ],
@@ -50,10 +44,22 @@ export class EmployeeCreateDialogComponent {
   roles$!: Observable<api.roles.Role[]>;
   platoons$!: Observable<api.platoons.Platoon[]>;
   employeeFormGroup = new FormGroup({
-    name: new FormControl('', { nonNullable: true }),
-    entryDate: new FormControl('', { nonNullable: true }),
-    platoonId: new FormControl('', { nonNullable: true }),
-    roleId: new FormControl('', { nonNullable: true }),
+    name: new FormControl<string>('', {
+      validators: [Validators.required],
+      nonNullable: true,
+    }),
+    entryDate: new FormControl('', {
+      validators: [Validators.required],
+      nonNullable: true,
+    }),
+    platoonId: new FormControl('', {
+      validators: [Validators.required],
+      nonNullable: true,
+    }),
+    roleId: new FormControl('', {
+      validators: [Validators.required],
+      nonNullable: true,
+    }),
   });
 
   constructor(
@@ -88,7 +94,7 @@ export class EmployeeCreateDialogComponent {
     this.platoons$ = this.platoonService.getPlatoons();
   }
 
-  onSaveClick(): void {
+  onSubmit(): void {
     if (!this.employeeId) {
       this.employeeService
         .createEmployee(this.employeeFormGroup.getRawValue())

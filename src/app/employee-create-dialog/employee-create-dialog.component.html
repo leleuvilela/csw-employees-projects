@@ -11,12 +11,11 @@
     </mat-form-field>
     <ng-container *ngIf="roles$ | async as roles">
       <div class="mb-3">
-        <label id="role">Role</label>
+        <label id="role">Role*</label>
         <mat-radio-group
           aria-labelledby="role"
           formControlName="roleId"
         >
-          <mat-radio-button [value]="">None</mat-radio-button>
           @for (role of roles; track role.id) {
           <mat-radio-button [value]="role.id">{{ role.name }}</mat-radio-button>
           }
@@ -37,5 +36,5 @@
 </div>
 <div mat-dialog-actions>
   <button mat-button (click)="onCancelClick()">Cancel</button>
-  <button mat-button (click)="onSaveClick()">Save</button>
+  <button mat-button (click)="onSubmit()" [disabled]="!employeeFormGroup.valid">Save</button>
 </div>
