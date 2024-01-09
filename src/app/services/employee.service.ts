@@ -21,7 +21,7 @@ export class EmployeeService {
     );
   }
 
-  getEmployee(id: number): Observable<api.employees.Employee> {
+  getEmployee(id: string): Observable<api.employees.Employee> {
     return this.http.get<api.employees.Employee>(`${this.baseUrl}/${id}`);
   }
 
@@ -29,11 +29,11 @@ export class EmployeeService {
     return this.http.post<api.employees.Employee>(`${this.baseUrl}`, employee, this.httpOptions);
   }
 
-  updateEmployee(id: number, employee: api.employees.UpdateEmployeeDto): Observable<api.employees.Employee> {
+  updateEmployee(id: string, employee: api.employees.UpdateEmployeeDto): Observable<api.employees.Employee> {
     return this.http.patch<api.employees.Employee>(`${this.baseUrl}/${id}`, employee, this.httpOptions);
   }
 
-  deleteEmployee(id: number): Observable<never> {
+  deleteEmployee(id: string): Observable<never> {
     return this.http.delete<never>(`${this.baseUrl}/${id}`);
   }
 }

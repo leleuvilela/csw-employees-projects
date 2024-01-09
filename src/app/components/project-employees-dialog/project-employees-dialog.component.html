@@ -1,0 +1,69 @@
+<mat-dialog-content>
+  <h2 mat-dialog-title *ngIf="project">{{ project.name }}</h2>
+
+  <ng-container *ngIf="project">
+    <table mat-table [dataSource]="project.allocations">
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef>Employee Name</th>
+        <td mat-cell *matCellDef="let allocation">
+          {{ allocation.employee.name }}
+        </td>
+        <td mat-footer-cell *matFooterCellDef>
+          <ng-container *ngIf="employees$ | async as employees">
+            <mat-form-field>
+              <mat-label>Employee</mat-label>
+              <mat-select [(value)]="newAllocation.employeeId">
+                @for (employee of employees; track employee.id) {
+                <mat-option [value]="employee.id">{{
+                  employee.name
+                }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </ng-container>
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="allocation">
+        <th mat-header-cell *matHeaderCellDef>Allocation</th>
+        <td mat-cell *matCellDef="let allocation">
+          {{ allocation.percentage }}%
+        </td>
+        <td mat-footer-cell *matFooterCellDef>
+          <mat-form-field appearance="fill">
+            <mat-label>Allocation</mat-label>
+            <input
+              matInput
+              type="number"
+              placeholder="Allocation"
+              [(ngModel)]="newAllocation.percentage"
+            />
+          </mat-form-field>
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Actions</th>
+        <td mat-cell *matCellDef="let allocation">
+          <button mat-icon-button (click)="deleteAllocation(allocation.id)">
+            <mat-icon fontIcon="link_off"></mat-icon>
+          </button>
+        </td>
+        <td mat-footer-cell *matFooterCellDef>
+          <button
+            mat-icon-button
+            (click)="addAllocation()"
+            [disabled]="!newAllocation.employeeId || !newAllocation.percentage"
+          >
+            <mat-icon fontIcon="add"></mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let project; columns: displayedColumns"></tr>
+      <tr mat-footer-row *matFooterRowDef="displayedColumns"></tr>
+    </table>
+  </ng-container>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <button mat-button mat-dialog-close>Close</button>
+</mat-dialog-actions>

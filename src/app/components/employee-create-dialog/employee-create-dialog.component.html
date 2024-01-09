@@ -7,15 +7,18 @@
     </mat-form-field>
     <mat-form-field>
       <mat-label>Start date</mat-label>
-      <input matInput formControlName="entryDate" />
+      <input matInput [matDatepicker]="picker" [min]="minDate" [max]="maxDate" formControlName="entryDate" />
+      <mat-hint>DD/MM/YYYY</mat-hint>
+      <mat-datepicker-toggle
+        matIconSuffix
+        [for]="picker"
+      ></mat-datepicker-toggle>
+      <mat-datepicker #picker></mat-datepicker>
     </mat-form-field>
     <ng-container *ngIf="roles$ | async as roles">
       <div class="mb-3">
         <label id="role">Role*</label>
-        <mat-radio-group
-          aria-labelledby="role"
-          formControlName="roleId"
-        >
+        <mat-radio-group aria-labelledby="role" formControlName="roleId">
           @for (role of roles; track role.id) {
           <mat-radio-button [value]="role.id">{{ role.name }}</mat-radio-button>
           }
@@ -36,5 +39,7 @@
 </div>
 <div mat-dialog-actions>
   <button mat-button (click)="onCancelClick()">Cancel</button>
-  <button mat-button (click)="onSubmit()" [disabled]="!employeeFormGroup.valid">Save</button>
+  <button mat-button (click)="onSubmit()" [disabled]="!employeeFormGroup.valid">
+    Save
+  </button>
 </div>

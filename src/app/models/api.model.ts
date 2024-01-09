@@ -26,6 +26,8 @@ export declare namespace api {
 
     export namespace allocations {
       export type Allocation = components['schemas']['Allocation'];
+      export type CreateAllocationDto = components['schemas']['CreateProductAllocationDto'];
+      export type UpdateAllocationDto = components['schemas']['UpdateProductAllocationDto'];
     }
   }
 }

@@ -21,7 +21,6 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
   ],
   providers: [MatDatepickerModule],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.scss',
 })
 export class AppComponent {
   title = 'csw-employees-projects';

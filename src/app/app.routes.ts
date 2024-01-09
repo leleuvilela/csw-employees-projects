@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
-import { EmployeesComponent } from './employees/employees.component';
-import { ProjectsComponent } from './projects/projects.component';
+import { EmployeesComponent } from './components/employees/employees.component';
+import { ProjectsComponent } from './components/projects/projects.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'employees', pathMatch: 'full' },
