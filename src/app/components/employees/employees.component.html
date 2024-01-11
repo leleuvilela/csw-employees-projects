@@ -1,13 +1,13 @@
 <div class="m-3">
   <div class="flex justify-end gap-2">
-    <button mat-raised-button color="primary" (click)="openDialog()">
+    <button mat-raised-button color="primary" (click)="openCreateDialog()">
       <mat-icon fontIcon="add"></mat-icon>
       Add
     </button>
     <button
       mat-raised-button
       color="primary"
-      (click)="openDialog(selectedEmployeeId)"
+      (click)="openCreateDialog(selectedEmployeeId)"
       [disabled]="!selectedEmployeeId"
     >
       <mat-icon fontIcon="edit"></mat-icon>

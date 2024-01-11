@@ -10,6 +10,7 @@ import { Observable } from 'rxjs';
 import { ProjectCreateDialogComponent } from '../project-create-dialog/project-create-dialog.component';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 import { ProjectEmployeesDialogComponent } from '../project-employees-dialog/project-employees-dialog.component';
+import { DataService } from '../../services/data.service';
 
 @Component({
   selector: 'app-projects',
@@ -19,21 +20,26 @@ import { ProjectEmployeesDialogComponent } from '../project-employees-dialog/pro
 })
 export class ProjectsComponent {
   @ViewChild(MatTable) table!: MatTable<api.projects.Project>;
-  projects$!: Observable<api.projects.Project[]>;
+  projects: api.projects.Project[] = [];
   displayedColumns: string[] = ['name', 'actions'];
   selectedProjectId?: string;
 
   constructor(
     private projectService: ProjectService,
+    private dataService: DataService,
     public dialog: MatDialog
   ) {}
 
   ngOnInit() {
+    this.dataService.fetchProjects();
+    this.dataService.fetchEmployees();
     this.getProjects();
   }
 
   getProjects() {
-    this.projects$ = this.projectService.getProjects();
+    this.dataService.projectsData$.subscribe((projects) => {
+      this.projects = projects;
+    });
   }
 
   deleteProject(projectId: string) {

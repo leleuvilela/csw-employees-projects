@@ -7,7 +7,13 @@
     </mat-form-field>
     <mat-form-field>
       <mat-label>Start date</mat-label>
-      <input matInput [matDatepicker]="picker" [min]="minDate" [max]="maxDate" formControlName="entryDate" />
+      <input
+        matInput
+        [matDatepicker]="picker"
+        [min]="minDate"
+        [max]="maxDate"
+        formControlName="entryDate"
+      />
       <mat-hint>DD/MM/YYYY</mat-hint>
       <mat-datepicker-toggle
         matIconSuffix
@@ -15,26 +21,22 @@
       ></mat-datepicker-toggle>
       <mat-datepicker #picker></mat-datepicker>
     </mat-form-field>
-    <ng-container *ngIf="roles$ | async as roles">
-      <div class="mb-3">
-        <label id="role">Role*</label>
-        <mat-radio-group aria-labelledby="role" formControlName="roleId">
-          @for (role of roles; track role.id) {
-          <mat-radio-button [value]="role.id">{{ role.name }}</mat-radio-button>
-          }
-        </mat-radio-group>
-      </div>
-    </ng-container>
-    <ng-container *ngIf="platoons$ | async as platoons">
-      <mat-form-field>
-        <mat-label>Platoon</mat-label>
-        <mat-select formControlName="platoonId">
-          @for (platoon of platoons; track platoon.id) {
-          <mat-option [value]="platoon.id">{{ platoon.name }}</mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
-    </ng-container>
+    <div class="mb-3">
+      <label id="role">Role*</label>
+      <mat-radio-group aria-labelledby="role" formControlName="roleId">
+        @for (role of roles; track role.id) {
+        <mat-radio-button [value]="role.id">{{ role.name }}</mat-radio-button>
+        }
+      </mat-radio-group>
+    </div>
+    <mat-form-field>
+      <mat-label>Platoon</mat-label>
+      <mat-select formControlName="platoonId">
+        @for (platoon of platoons; track platoon.id) {
+        <mat-option [value]="platoon.id">{{ platoon.name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
   </form>
 </div>
 <div mat-dialog-actions>

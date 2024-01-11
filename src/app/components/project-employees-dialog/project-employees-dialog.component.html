@@ -9,18 +9,14 @@
           {{ allocation.employee.name }}
         </td>
         <td mat-footer-cell *matFooterCellDef>
-          <ng-container *ngIf="employees$ | async as employees">
-            <mat-form-field>
-              <mat-label>Employee</mat-label>
-              <mat-select [(value)]="newAllocation.employeeId">
-                @for (employee of employees; track employee.id) {
-                <mat-option [value]="employee.id">{{
-                  employee.name
-                }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-          </ng-container>
+          <mat-form-field>
+            <mat-label>Employee</mat-label>
+            <mat-select [(value)]="newAllocation.employeeId">
+              @for (employee of employees; track employee.id) {
+              <mat-option [value]="employee.id">{{ employee.name }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
         </td>
       </ng-container>
       <ng-container matColumnDef="allocation">

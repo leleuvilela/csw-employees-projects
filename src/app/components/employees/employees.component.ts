@@ -1,18 +1,17 @@
 import { Component, ViewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { EmployeeService } from '../../services/employee.service';
-import { RoleService } from '../../services/role.service';
-import { PlatoonService } from '../../services/platoon.service';
-import { forkJoin } from 'rxjs';
+import { combineLatest } from 'rxjs';
 import { CommonModule } from '@angular/common';
-import { MatTable, MatTableModule } from '@angular/material/table';
+import { MatTableModule } from '@angular/material/table';
 import { MatDialog } from '@angular/material/dialog';
 import { EmployeeCreateDialogComponent } from '../employee-create-dialog/employee-create-dialog.component';
-import { api } from '../../models/api.model';
 import { Employee } from '../../models/employee.model';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 import { Router, RouterLink } from '@angular/router';
+import { DataService } from '../../services/data.service';
+import { EmployeeService } from '../../services/employee.service';
+import { api } from '../../models/api.model';
 
 @Component({
   selector: 'app-employees',
@@ -27,7 +26,6 @@ import { Router, RouterLink } from '@angular/router';
   templateUrl: './employees.component.html',
 })
 export class EmployeesComponent {
-  @ViewChild(MatTable) table!: MatTable<api.employees.Employee>;
   employees: Employee[] = [];
   selectedEmployeeId?: string;
   displayedColumns: string[] = [
@@ -39,38 +37,39 @@ export class EmployeesComponent {
   ];
 
   constructor(
+    private dataService: DataService,
     private employeeService: EmployeeService,
-    private roleService: RoleService,
-    private platoonService: PlatoonService,
     private router: Router,
     public dialog: MatDialog
   ) {}
 
   ngOnInit() {
-    this.getEmployees();
+    this.dataService.fetchEmployees();
+    this.dataService.fetchRoles();
+    this.dataService.fetchPlatoons();
+    this.getEmployeeData();
   }
 
-  getEmployees() {
-    forkJoin([
-      this.employeeService.getEmployees(),
-      this.roleService.getRoles(),
-      this.platoonService.getPlatoons(),
-    ]).subscribe((results) => {
-      let employees: Employee[] = [];
+  getEmployeeData() {
+    combineLatest([
+      this.dataService.employeesData$,
+      this.dataService.rolesData$,
+      this.dataService.platoonsData$,
+    ]).subscribe(([employees, roles, platoons]) => {
+      this.employees = employees.map((employee) => {
+        const role =
+          roles.find((role) => role.id === employee.roleId) ||
+          ({} as api.roles.Role);
+        const platoon =
+          platoons.find((platoon) => platoon.id === employee.platoonId) ||
+          ({} as api.platoons.Platoon);
 
-      results[0].forEach((employeeData) => {
-        const role = results[1].find(
-          (role) => role.id === employeeData.roleId
-        )!;
-        const platoon = results[2].find(
-          (platoon) => platoon.id === employeeData.platoonId
-        )!;
-
-        employees.push({ ...employeeData, role, platoon });
+        return {
+          ...employee,
+          role,
+          platoon,
+        };
       });
-
-      this.employees = employees;
-      this.table.renderRows();
     });
   }
 
@@ -85,7 +84,7 @@ export class EmployeesComponent {
 
   deleteEmployee(employeeId: string) {
     this.employeeService.deleteEmployee(employeeId).subscribe(() => {
-      this.getEmployees();
+      this.dataService.fetchEmployees();
     });
   }
 
@@ -109,7 +108,7 @@ export class EmployeesComponent {
     });
   }
 
-  openDialog(employeeId?: string) {
+  openCreateDialog(employeeId?: string) {
     const dialogRef = this.dialog.open(EmployeeCreateDialogComponent, {
       width: '650px',
       data: employeeId,
@@ -117,7 +116,7 @@ export class EmployeesComponent {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        this.getEmployees();
+        this.dataService.fetchEmployees();
       }
     });
   }

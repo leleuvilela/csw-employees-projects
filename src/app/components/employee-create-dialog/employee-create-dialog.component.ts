@@ -23,9 +23,18 @@ import { Observable } from 'rxjs';
 import { PlatoonService } from '../../services/platoon.service';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { DateFnsAdapter, MAT_DATE_FNS_FORMATS, MatDateFnsModule } from '@angular/material-date-fns-adapter';
-import { DateAdapter, MAT_DATE_LOCALE, MAT_DATE_FORMATS } from '@angular/material/core';
+import {
+  DateFnsAdapter,
+  MAT_DATE_FNS_FORMATS,
+  MatDateFnsModule,
+} from '@angular/material-date-fns-adapter';
+import {
+  DateAdapter,
+  MAT_DATE_LOCALE,
+  MAT_DATE_FORMATS,
+} from '@angular/material/core';
 import { pt } from 'date-fns/locale';
+import { DataService } from '../../services/data.service';
 
 @Component({
   selector: 'app-employee-create-dialog',
@@ -44,7 +53,7 @@ import { pt } from 'date-fns/locale';
     MatDateFnsModule,
   ],
   providers: [
-  {
+    {
       provide: DateAdapter,
       useClass: DateFnsAdapter,
       deps: [MAT_DATE_LOCALE],
@@ -61,8 +70,8 @@ import { pt } from 'date-fns/locale';
   templateUrl: './employee-create-dialog.component.html',
 })
 export class EmployeeCreateDialogComponent {
-  roles$!: Observable<api.roles.Role[]>;
-  platoons$!: Observable<api.platoons.Platoon[]>;
+  roles: api.roles.Role[] = [];
+  platoons: api.platoons.Platoon[] = [];
   employeeFormGroup = new FormGroup({
     name: new FormControl<string>('', {
       validators: [Validators.required],
@@ -82,13 +91,12 @@ export class EmployeeCreateDialogComponent {
     }),
   });
   minDate: Date = new Date();
-  maxDate: Date = new Date('12/31/2500')
+  maxDate: Date = new Date('12/31/2500');
 
   constructor(
     public dialogRef: MatDialogRef<EmployeeCreateDialogComponent>,
     private employeeService: EmployeeService,
-    private roleService: RoleService,
-    private platoonService: PlatoonService,
+    private dataService: DataService,
     @Inject(MAT_DIALOG_DATA) public employeeId?: string
   ) {}
 
@@ -106,11 +114,16 @@ export class EmployeeCreateDialogComponent {
   }
 
   getRoles() {
-    this.roles$ = this.roleService.getRoles();
+    this.dataService.rolesData$.subscribe((roles) => {
+      console.log(roles);
+      this.roles = roles;
+    });
   }
 
   getPlatoons() {
-    this.platoons$ = this.platoonService.getPlatoons();
+    this.dataService.platoonsData$.subscribe((platoons) => {
+      this.platoons = platoons;
+    });
   }
 
   onSubmit(): void {

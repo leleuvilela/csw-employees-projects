@@ -5,7 +5,6 @@ import {
   MatDialogRef,
 } from '@angular/material/dialog';
 import { ProjectService } from '../../services/project.service';
-import { EmployeeService } from '../../services/employee.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -14,10 +13,11 @@ import { MatInputModule } from '@angular/material/input';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
-import { Observable, forkJoin } from 'rxjs';
+import { combineLatest } from 'rxjs';
 import { api } from '../../models/api.model';
 import { Allocation, Project } from '../../models/project.model';
 import { MatIconModule } from '@angular/material/icon';
+import { DataService } from '../../services/data.service';
 
 @Component({
   selector: 'app-project-employees-dialog',
@@ -40,7 +40,7 @@ import { MatIconModule } from '@angular/material/icon';
 export class ProjectEmployeesDialogComponent {
   displayedColumns: string[] = ['name', 'allocation', 'actions'];
   project: Project | undefined;
-  employees$!: Observable<api.employees.Employee[]>;
+  employees: api.employees.Employee[] = [];
   newAllocation: api.projects.allocations.CreateAllocationDto = {
     employeeId: '',
     percentage: 0,
@@ -49,29 +49,27 @@ export class ProjectEmployeesDialogComponent {
   constructor(
     public dialogRef: MatDialogRef<ProjectEmployeesDialogComponent>,
     private projectService: ProjectService,
-    private employeeService: EmployeeService,
+    private dataService: DataService,
     @Inject(MAT_DIALOG_DATA) public projectId: string
   ) {}
 
   ngOnInit() {
-    this.getEmployees();
     this.getProjectEmployees();
+    this.getEmployees();
   }
 
   getEmployees() {
-    this.employees$ = this.employeeService.getEmployees();
+    this.dataService.employeesData$.subscribe((employees) => {
+      this.employees = employees;
+    });
   }
 
   getProjectEmployees() {
-    forkJoin([
+    combineLatest([
       this.projectService.getProject(this.projectId),
       this.projectService.getProjectAllocations(this.projectId),
-      this.employees$,
-    ]).subscribe((results) => {
-      const project = results[0];
-      const projectAllocation = results[1];
-      const employees = results[2];
-
+      this.dataService.employeesData$,
+    ]).subscribe(([project, projectAllocation, employees]) => {
       const allocations: Allocation[] = projectAllocation.map((allocation) => {
         const employee = employees.find(
           (employee) => employee.id === allocation.employeeId
