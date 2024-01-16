@@ -13,11 +13,22 @@ import { MatInputModule } from '@angular/material/input';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
-import { combineLatest } from 'rxjs';
+import {
+  BehaviorSubject,
+  Observable,
+  catchError,
+  combineLatest,
+  map,
+  of,
+  switchMap,
+  tap,
+} from 'rxjs';
 import { api } from '../../models/api.model';
 import { Allocation, Project } from '../../models/project.model';
 import { MatIconModule } from '@angular/material/icon';
 import { DataService } from '../../services/data.service';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-project-employees-dialog',
@@ -34,13 +45,15 @@ import { DataService } from '../../services/data.service';
     MatRadioModule,
     MatSelectModule,
     MatTableModule,
+    MatProgressSpinnerModule,
   ],
   templateUrl: './project-employees-dialog.component.html',
 })
 export class ProjectEmployeesDialogComponent {
   displayedColumns: string[] = ['name', 'allocation', 'actions'];
-  project: Project | undefined;
-  employees: api.employees.Employee[] = [];
+  project$!: Observable<Project | null>;
+  employees$!: Observable<api.employees.Employee[] | null>;
+  loading$ = new BehaviorSubject<boolean>(false);
   newAllocation: api.projects.allocations.CreateAllocationDto = {
     employeeId: '',
     percentage: 0,
@@ -50,6 +63,7 @@ export class ProjectEmployeesDialogComponent {
     public dialogRef: MatDialogRef<ProjectEmployeesDialogComponent>,
     private projectService: ProjectService,
     private dataService: DataService,
+    private _snackBar: MatSnackBar,
     @Inject(MAT_DIALOG_DATA) public projectId: string
   ) {}
 
@@ -59,33 +73,54 @@ export class ProjectEmployeesDialogComponent {
   }
 
   getEmployees() {
-    this.dataService.employeesData$.subscribe((employees) => {
-      this.employees = employees;
-    });
+    this.employees$ = this.dataService.employeesData$;
   }
 
   getProjectEmployees() {
-    combineLatest([
-      this.projectService.getProject(this.projectId),
-      this.projectService.getProjectAllocations(this.projectId),
-      this.dataService.employeesData$,
-    ]).subscribe(([project, projectAllocation, employees]) => {
-      const allocations: Allocation[] = projectAllocation.map((allocation) => {
-        const employee = employees.find(
-          (employee) => employee.id === allocation.employeeId
-        )!;
-        return {
-          id: allocation.id,
-          employee,
-          percentage: allocation.percentage,
-        };
-      });
+    this.project$ = this.projectService.getProject(this.projectId).pipe(
+      tap(() => this.loading$.next(true)),
+      switchMap(() =>
+        combineLatest([
+          this.projectService.getProject(this.projectId),
+          this.projectService.getProjectAllocations(this.projectId),
+          this.dataService.employeesData$,
+        ]).pipe(
+          catchError((error) => {
+            console.error(error);
+            this._snackBar.open('Error fetching project employees', 'Dismiss');
+            return of([null, null, null]);
+          }),
+          tap((res) => {
+            if (res.every(Boolean)) {
+              this.loading$.next(false);
+            }
+          })
+        )
+      ),
+      map(([project, projectAllocations, employees]) => {
+        if (!project || !projectAllocations || !employees) {
+          return null;
+        }
 
-      this.project = {
-        ...project,
-        allocations,
-      };
-    });
+        const allocations: Allocation[] = projectAllocations.map(
+          (allocation) => {
+            const employee = employees.find(
+              (employee) => employee.id === allocation.employeeId
+            )!;
+            return {
+              id: allocation.id,
+              employee,
+              percentage: allocation.percentage,
+            };
+          }
+        );
+
+        return {
+          ...project,
+          allocations,
+        };
+      })
+    );
   }
 
   deleteAllocation(allocationId: string) {

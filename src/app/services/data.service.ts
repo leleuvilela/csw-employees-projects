@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, Subject, switchMap } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, delay, switchMap } from 'rxjs';
 import { EmployeeService } from './employee.service';
 import { api } from '../models/api.model';
 import { RoleService } from './role.service';
@@ -10,12 +10,12 @@ import { ProjectService } from './project.service';
   providedIn: 'root',
 })
 export class DataService {
-  private employeesData = new BehaviorSubject<api.employees.Employee[]>([]);
+  private employeesData = new BehaviorSubject<api.employees.Employee[] | null>(null);
   private platoonsData = new BehaviorSubject<api.platoons.Platoon[]>([]);
   private rolesData = new BehaviorSubject<api.roles.Role[]>([]);
-  private projectsData = new BehaviorSubject<api.projects.Project[]>([]);
+  private projectsData = new BehaviorSubject<api.projects.Project[] | null>(null);
 
-  get employeesData$(): Observable<api.employees.Employee[]> {
+  get employeesData$(): Observable<api.employees.Employee[] | null> {
     return this.employeesData.asObservable();
   }
 
@@ -27,7 +27,7 @@ export class DataService {
     return this.rolesData.asObservable();
   }
 
-  get projectsData$(): Observable<api.projects.Project[]> {
+  get projectsData$(): Observable<api.projects.Project[] | null> {
     return this.projectsData.asObservable();
   }
 
@@ -39,7 +39,9 @@ export class DataService {
   ) {}
 
   fetchEmployees() {
-    this.employeeService.getEmployees().subscribe((employees) => {
+    this.employeeService.getEmployees().pipe(
+      delay(3000)
+    ).subscribe((employees) => {
       this.employeesData.next(employees);
     });
   }
@@ -57,8 +59,17 @@ export class DataService {
   }
 
   fetchProjects() {
-    this.projectService.getProjects().subscribe((projects) => {
+    this.projectService.getProjects().pipe(
+      delay(3000)
+    ).subscribe((projects) => {
       this.projectsData.next(projects);
     });
+  }
+
+  complete() {
+    this.employeesData.complete();
+    this.platoonsData.complete();
+    this.rolesData.complete();
+    this.projectsData.complete();
   }
 }

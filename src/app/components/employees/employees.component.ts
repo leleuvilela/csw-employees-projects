@@ -1,7 +1,16 @@
 import { Component, ViewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { combineLatest } from 'rxjs';
+import {
+  BehaviorSubject,
+  Observable,
+  catchError,
+  combineLatest,
+  map,
+  of,
+  switchMap,
+  tap,
+} from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatDialog } from '@angular/material/dialog';
@@ -12,6 +21,8 @@ import { Router, RouterLink } from '@angular/router';
 import { DataService } from '../../services/data.service';
 import { EmployeeService } from '../../services/employee.service';
 import { api } from '../../models/api.model';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-employees',
@@ -22,11 +33,12 @@ import { api } from '../../models/api.model';
     MatIconModule,
     MatTableModule,
     RouterLink,
+    MatProgressSpinnerModule,
   ],
   templateUrl: './employees.component.html',
 })
 export class EmployeesComponent {
-  employees: Employee[] = [];
+  employees$!: Observable<Employee[] | undefined>;
   selectedEmployeeId?: string;
   displayedColumns: string[] = [
     'name',
@@ -35,11 +47,13 @@ export class EmployeesComponent {
     'platoon',
     'actions',
   ];
+  loading$ = new BehaviorSubject<boolean>(false);
 
   constructor(
     private dataService: DataService,
     private employeeService: EmployeeService,
     private router: Router,
+    private _snackBar: MatSnackBar,
     public dialog: MatDialog
   ) {}
 
@@ -50,27 +64,48 @@ export class EmployeesComponent {
     this.getEmployeeData();
   }
 
-  getEmployeeData() {
-    combineLatest([
-      this.dataService.employeesData$,
-      this.dataService.rolesData$,
-      this.dataService.platoonsData$,
-    ]).subscribe(([employees, roles, platoons]) => {
-      this.employees = employees.map((employee) => {
-        const role =
-          roles.find((role) => role.id === employee.roleId) ||
-          ({} as api.roles.Role);
-        const platoon =
-          platoons.find((platoon) => platoon.id === employee.platoonId) ||
-          ({} as api.platoons.Platoon);
+  ngOnDestroy() {
+    this.employees$ = undefined!;
+  }
 
-        return {
-          ...employee,
-          role,
-          platoon,
-        };
-      });
-    });
+  getEmployeeData() {
+    this.employees$ = this.dataService.employeesData$.pipe(
+      tap(() => this.loading$.next(true)),
+      switchMap(() =>
+        combineLatest([
+          this.dataService.employeesData$,
+          this.dataService.rolesData$,
+          this.dataService.platoonsData$,
+        ]).pipe(
+          catchError((error) => {
+            console.error(error);
+            this._snackBar.open('Error fetching employees', 'Dismiss')
+            return of([[], [], []]);
+          }),
+          tap((res) => {
+            if (res.every(Boolean)) {
+              this.loading$.next(false);
+            }
+          })
+        )
+      ),
+      map(([employees, roles, platoons]) => {
+        return employees?.map((employee) => {
+          const role =
+            roles.find((role) => role.id === employee.roleId) ||
+            ({} as api.roles.Role);
+          const platoon =
+            platoons.find((platoon) => platoon.id === employee.platoonId) ||
+            ({} as api.platoons.Platoon);
+
+          return {
+            ...employee,
+            role,
+            platoon,
+          };
+        });
+      })
+    );
   }
 
   selectEmployee(employeeId: string) {

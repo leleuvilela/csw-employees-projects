@@ -115,7 +115,6 @@ export class EmployeeCreateDialogComponent {
 
   getRoles() {
     this.dataService.rolesData$.subscribe((roles) => {
-      console.log(roles);
       this.roles = roles;
     });
   }

@@ -23,34 +23,39 @@
       Delete
     </button>
   </div>
-  <table mat-table [dataSource]="projects">
-    <ng-container matColumnDef="name">
-      <th mat-header-cell *matHeaderCellDef>Name</th>
-      <td mat-cell *matCellDef="let project">{{ project.name }}</td>
-    </ng-container>
+  <ng-container *ngIf="projects$ | async as projects">
+    <table mat-table [dataSource]="projects">
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef>Name</th>
+        <td mat-cell *matCellDef="let project">{{ project.name }}</td>
+      </ng-container>
 
-    <ng-container matColumnDef="actions">
-      <th mat-header-cell *matHeaderCellDef></th>
-      <td mat-cell *matCellDef="let project">
-        <div class="flex items-center">
-          <button
-            mat-raised-button
-            (click)="openProjectEmployeesDialog(project.id)"
-          >
-            Employees
-          </button>
-        </div>
-      </td>
-    </ng-container>
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let project">
+          <div class="flex items-center">
+            <button
+              mat-raised-button
+              (click)="openProjectEmployeesDialog(project.id)"
+            >
+              Employees
+            </button>
+          </div>
+        </td>
+      </ng-container>
 
-    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-    <tr
-      mat-row
-      class="cursor-pointer hover:bg-gray-100"
-      [class.!font-bold]="selectedProjectId === row.id"
-      [class.!bg-gray-200]="selectedProjectId === row.id"
-      (click)="selectProject(row.id)"
-      *matRowDef="let row; columns: displayedColumns"
-    ></tr>
-  </table>
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr
+        mat-row
+        class="cursor-pointer hover:bg-gray-100"
+        [class.!font-bold]="selectedProjectId === row.id"
+        [class.!bg-gray-200]="selectedProjectId === row.id"
+        (click)="selectProject(row.id)"
+        *matRowDef="let row; columns: displayedColumns"
+      ></tr>
+    </table>
+  </ng-container>
+  <div class="flex justify-center items-center" *ngIf="loading$ | async">
+    <mat-spinner></mat-spinner>
+  </div>
 </div>

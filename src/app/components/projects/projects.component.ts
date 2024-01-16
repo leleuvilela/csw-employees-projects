@@ -6,27 +6,37 @@ import { MatTable, MatTableModule } from '@angular/material/table';
 import { api } from '../../models/api.model';
 import { ProjectService } from '../../services/project.service';
 import { MatDialog } from '@angular/material/dialog';
-import { Observable } from 'rxjs';
+import { BehaviorSubject, Observable, catchError, of, tap } from 'rxjs';
 import { ProjectCreateDialogComponent } from '../project-create-dialog/project-create-dialog.component';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 import { ProjectEmployeesDialogComponent } from '../project-employees-dialog/project-employees-dialog.component';
 import { DataService } from '../../services/data.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-projects',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatIconModule, MatTableModule],
+  imports: [
+    CommonModule,
+    MatButtonModule,
+    MatIconModule,
+    MatTableModule,
+    MatProgressSpinnerModule,
+  ],
   templateUrl: './projects.component.html',
 })
 export class ProjectsComponent {
   @ViewChild(MatTable) table!: MatTable<api.projects.Project>;
-  projects: api.projects.Project[] = [];
+  projects$!: Observable<api.projects.Project[] | null>;
+  loading$ = new BehaviorSubject<boolean>(true);
   displayedColumns: string[] = ['name', 'actions'];
   selectedProjectId?: string;
 
   constructor(
     private projectService: ProjectService,
     private dataService: DataService,
+    private _snackBar: MatSnackBar,
     public dialog: MatDialog
   ) {}
 
@@ -37,15 +47,36 @@ export class ProjectsComponent {
   }
 
   getProjects() {
-    this.dataService.projectsData$.subscribe((projects) => {
-      this.projects = projects;
-    });
+    this.projects$ = this.dataService.projectsData$.pipe(
+      catchError((err) => {
+        console.error(err);
+        this._snackBar.open('Error fetching projects', 'Close');
+        return of([]);
+      }),
+      tap((res) => {
+        if (res) {
+          this.loading$.next(false);
+        }
+      })
+    );
   }
 
   deleteProject(projectId: string) {
-    this.projectService.deleteProject(projectId).subscribe(() => {
-      this.getProjects();
-    });
+    this.projectService
+      .deleteProject(projectId)
+      .pipe(
+        catchError((err) => {
+          console.error(err);
+          this._snackBar.open(
+            'Error deleting project, you need remove the allocations first.',
+            'Close'
+          );
+          return of(null);
+        })
+      )
+      .subscribe(() => {
+        this.getProjects();
+      });
   }
 
   selectProject(projectId: string) {

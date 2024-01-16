@@ -1,7 +1,7 @@
 <mat-dialog-content>
-  <h2 mat-dialog-title *ngIf="project">{{ project.name }}</h2>
+  <ng-container *ngIf="project$ | async as project">
+    <h2 mat-dialog-title>{{ project.name }}</h2>
 
-  <ng-container *ngIf="project">
     <table mat-table [dataSource]="project.allocations">
       <ng-container matColumnDef="name">
         <th mat-header-cell *matHeaderCellDef>Employee Name</th>
@@ -9,7 +9,7 @@
           {{ allocation.employee.name }}
         </td>
         <td mat-footer-cell *matFooterCellDef>
-          <mat-form-field>
+          <mat-form-field *ngIf="employees$ | async as employees">
             <mat-label>Employee</mat-label>
             <mat-select [(value)]="newAllocation.employeeId">
               @for (employee of employees; track employee.id) {
@@ -59,6 +59,9 @@
       <tr mat-footer-row *matFooterRowDef="displayedColumns"></tr>
     </table>
   </ng-container>
+  <div class="flex justify-center items-center" *ngIf="loading$ | async">
+    <mat-spinner></mat-spinner>
+  </div>
 </mat-dialog-content>
 <mat-dialog-actions>
   <button mat-button mat-dialog-close>Close</button>
