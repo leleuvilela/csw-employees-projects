@@ -7,7 +7,7 @@ import { api } from '../models/api.model';
   providedIn: 'root'
 })
 export class EmployeeService {
-  private baseUrl = 'http://localhost:3000/api/employees';
+  baseUrl = 'http://localhost:3000/api/employees';
 
   httpOptions = {
     headers: new HttpHeaders({ 'Content-Type': 'application/json' })

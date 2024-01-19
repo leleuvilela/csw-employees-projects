@@ -142,8 +142,4 @@ export class ProjectEmployeesDialogComponent {
         };
       });
   }
-
-  onSubmit(): void {
-    this.dialogRef.close();
-  }
 }
