@@ -78,7 +78,6 @@ export class EmployeesComponent {
           this.dataService.platoonsData$,
         ]).pipe(
           catchError((error) => {
-            console.error(error);
             this._snackBar.open('Error fetching employees', 'Dismiss')
             return of([[], [], []]);
           }),

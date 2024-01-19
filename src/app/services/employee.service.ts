@@ -16,9 +16,7 @@ export class EmployeeService {
   constructor(private http: HttpClient) { }
 
   getEmployees(): Observable<api.employees.Employee[]> {
-    return this.http.get<api.employees.Employee[]>(`${this.baseUrl}`).pipe(
-      shareReplay(1)
-    );
+    return this.http.get<api.employees.Employee[]>(`${this.baseUrl}`);
   }
 
   getEmployee(id: string): Observable<api.employees.Employee> {
