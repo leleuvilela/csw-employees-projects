@@ -35,6 +35,11 @@ import {
 } from '@angular/material/core';
 import { pt } from 'date-fns/locale';
 import { DataService } from '../../services/data.service';
+import { Store } from '@ngrx/store';
+import { selectRolesState } from '../../state/roles/roles.reducer';
+import { selectPlatoonsState } from '../../state/platoons/platoons.reducer';
+import { selectEmployeeById } from '../../state/employees/employees.selectors';
+import { EmployeesActions } from '../../state/employees/employees.actions';
 
 @Component({
   selector: 'app-employee-create-dialog',
@@ -70,8 +75,6 @@ import { DataService } from '../../services/data.service';
   templateUrl: './employee-create-dialog.component.html',
 })
 export class EmployeeCreateDialogComponent {
-  roles: api.roles.Role[] = [];
-  platoons: api.platoons.Platoon[] = [];
   employeeFormGroup = new FormGroup({
     name: new FormControl<string>('', {
       validators: [Validators.required],
@@ -93,56 +96,48 @@ export class EmployeeCreateDialogComponent {
   minDate: Date = new Date();
   maxDate: Date = new Date('12/31/2500');
 
+  rolesStore$ = this.store.select(selectRolesState);
+  platoonsStore$ = this.store.select(selectPlatoonsState);
+
   constructor(
     public dialogRef: MatDialogRef<EmployeeCreateDialogComponent>,
-    private employeeService: EmployeeService,
-    private dataService: DataService,
+    private store: Store,
     @Inject(MAT_DIALOG_DATA) public employeeId?: string
   ) {}
 
   ngOnInit(): void {
-    this.getRoles();
-    this.getPlatoons();
-
     if (this.employeeId) {
-      this.employeeService
-        .getEmployee(this.employeeId)
+      this.store
+        .select(selectEmployeeById(this.employeeId))
         .subscribe((employee) => {
-          this.employeeFormGroup.patchValue(employee);
+          this.employeeFormGroup.patchValue({
+            name: employee?.name,
+            entryDate: employee?.entryDate,
+            platoonId: employee?.platoonId,
+            roleId: employee?.roleId,
+          });
         });
     }
-  }
-
-  getRoles() {
-    this.dataService.rolesData$.subscribe((roles) => {
-      this.roles = roles;
-    });
-  }
-
-  getPlatoons() {
-    this.dataService.platoonsData$.subscribe((platoons) => {
-      this.platoons = platoons;
-    });
   }
 
   onSubmit(): void {
-    if (!this.employeeId) {
-      this.employeeService
-        .createEmployee(this.employeeFormGroup.getRawValue())
-        .subscribe((data) => {
-          console.log(data);
-          this.dialogRef.close(true);
-        });
-
+    if (this.employeeId) {
+      this.store.dispatch(
+        EmployeesActions.updateRequest({
+          employeeId: this.employeeId,
+          employee: this.employeeFormGroup.getRawValue(),
+        })
+      );
+      this.dialogRef.close(true);
       return;
     }
 
-    this.employeeService
-      .updateEmployee(this.employeeId, this.employeeFormGroup.getRawValue())
-      .subscribe((data) => {
-        console.log(data);
-        this.dialogRef.close(true);
-      });
+    this.store.dispatch(
+      EmployeesActions.createRequest({
+        employee: this.employeeFormGroup.getRawValue(),
+      })
+    );
+    this.dialogRef.close(true);
   }
 
   onCancelClick(): void {

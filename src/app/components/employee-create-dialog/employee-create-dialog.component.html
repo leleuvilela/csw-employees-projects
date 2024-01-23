@@ -21,18 +21,18 @@
       ></mat-datepicker-toggle>
       <mat-datepicker #picker></mat-datepicker>
     </mat-form-field>
-    <div class="mb-3">
+    <div class="mb-3" *ngIf="rolesStore$ | async as rolesStore">
       <label id="role">Role*</label>
       <mat-radio-group aria-labelledby="role" formControlName="roleId">
-        @for (role of roles; track role.id) {
+        @for (role of rolesStore.roles; track role.id) {
         <mat-radio-button [value]="role.id">{{ role.name }}</mat-radio-button>
         }
       </mat-radio-group>
     </div>
-    <mat-form-field>
+    <mat-form-field *ngIf="platoonsStore$ | async as platoonsStore">
       <mat-label>Platoon</mat-label>
       <mat-select formControlName="platoonId">
-        @for (platoon of platoons; track platoon.id) {
+        @for (platoon of platoonsStore.platoons; track platoon.id) {
         <mat-option [value]="platoon.id">{{ platoon.name }}</mat-option>
         }
       </mat-select>

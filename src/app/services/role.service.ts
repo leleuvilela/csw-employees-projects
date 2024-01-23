@@ -1,6 +1,6 @@
 import { HttpHeaders, HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, shareReplay } from 'rxjs';
 import { api } from '../models/api.model';
 
 @Injectable({
@@ -16,7 +16,9 @@ export class RoleService {
   constructor(private http: HttpClient) { }
 
   getRoles(): Observable<api.roles.Role[]> {
-    return this.http.get<api.roles.Role[]>(`${this.baseUrl}`);
+    return this.http.get<api.roles.Role[]>(`${this.baseUrl}`).pipe(
+      shareReplay(1)
+    );
   }
 
   getRole(id: number): Observable<api.roles.Role> {

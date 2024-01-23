@@ -1,13 +1,13 @@
 <div class="m-3">
   <div class="flex justify-end gap-2">
-    <button mat-raised-button color="primary" (click)="openCreateDialog()">
+    <button mat-raised-button color="primary" (click)="openManageEmployeeDialog()">
       <mat-icon fontIcon="add"></mat-icon>
       Add
     </button>
     <button
       mat-raised-button
       color="primary"
-      (click)="openCreateDialog(selectedEmployeeId)"
+      (click)="openManageEmployeeDialog(selectedEmployeeId)"
       [disabled]="!selectedEmployeeId"
     >
       <mat-icon fontIcon="edit"></mat-icon>
@@ -23,8 +23,13 @@
       Delete
     </button>
   </div>
-  <ng-container *ngIf="employees$ | async as employees">
-    <table mat-table [dataSource]="employees">
+  <ng-container *ngIf="employeesStore$ | async as employeesStore">
+    @if (employeesStore.loading) {
+    <div class="flex justify-center items-center">
+      <mat-spinner></mat-spinner>
+    </div>
+    } @else {
+    <table mat-table [dataSource]="employeesStore.employees">
       <ng-container matColumnDef="name">
         <th mat-header-cell *matHeaderCellDef>Name</th>
         <td mat-cell *matCellDef="let employee">{{ employee.name }}</td>
@@ -70,8 +75,6 @@
         *matRowDef="let row; columns: displayedColumns"
       ></tr>
     </table>
+    }
   </ng-container>
-  <div class="flex justify-center items-center" *ngIf="loading$ | async">
-    <mat-spinner></mat-spinner>
-  </div>
 </div>

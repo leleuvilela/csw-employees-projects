@@ -23,6 +23,11 @@ import { EmployeeService } from '../../services/employee.service';
 import { api } from '../../models/api.model';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { Store } from '@ngrx/store';
+import { selectEmployeesPageViewModel } from '../../state/employees/employees.selectors';
+import { EmployeesActions } from '../../state/employees/employees.actions';
+import { RolesActions } from '../../state/roles/roles.actions';
+import { PlatoonsActions } from '../../state/platoons/platoons.actions';
 
 @Component({
   selector: 'app-employees',
@@ -38,7 +43,6 @@ import { MatSnackBar } from '@angular/material/snack-bar';
   templateUrl: './employees.component.html',
 })
 export class EmployeesComponent {
-  employees$!: Observable<Employee[] | undefined>;
   selectedEmployeeId?: string;
   displayedColumns: string[] = [
     'name',
@@ -49,62 +53,19 @@ export class EmployeesComponent {
   ];
   loading$ = new BehaviorSubject<boolean>(false);
 
+  employeesStore$ = this.store.select(selectEmployeesPageViewModel)
+
   constructor(
-    private dataService: DataService,
     private employeeService: EmployeeService,
     private router: Router,
-    private _snackBar: MatSnackBar,
+    private store: Store,
     public dialog: MatDialog
   ) {}
 
   ngOnInit() {
-    this.dataService.fetchEmployees();
-    this.dataService.fetchRoles();
-    this.dataService.fetchPlatoons();
-    this.getEmployeeData();
-  }
-
-  ngOnDestroy() {
-    this.employees$ = undefined!;
-  }
-
-  getEmployeeData() {
-    this.employees$ = this.dataService.employeesData$.pipe(
-      tap(() => this.loading$.next(true)),
-      switchMap(() =>
-        combineLatest([
-          this.dataService.employeesData$,
-          this.dataService.rolesData$,
-          this.dataService.platoonsData$,
-        ]).pipe(
-          catchError((error) => {
-            this._snackBar.open('Error fetching employees', 'Dismiss')
-            return of([[], [], []]);
-          }),
-          tap((res) => {
-            if (res.every(Boolean)) {
-              this.loading$.next(false);
-            }
-          })
-        )
-      ),
-      map(([employees, roles, platoons]) => {
-        return employees?.map((employee) => {
-          const role =
-            roles.find((role) => role.id === employee.roleId) ||
-            ({} as api.roles.Role);
-          const platoon =
-            platoons.find((platoon) => platoon.id === employee.platoonId) ||
-            ({} as api.platoons.Platoon);
-
-          return {
-            ...employee,
-            role,
-            platoon,
-          };
-        });
-      })
-    );
+    this.store.dispatch(EmployeesActions.loadRequest())
+    this.store.dispatch(RolesActions.loadRequest());
+    this.store.dispatch(PlatoonsActions.loadRequest());
   }
 
   selectEmployee(employeeId: string) {
@@ -117,9 +78,7 @@ export class EmployeesComponent {
   }
 
   deleteEmployee(employeeId: string) {
-    this.employeeService.deleteEmployee(employeeId).subscribe(() => {
-      this.dataService.fetchEmployees();
-    });
+    this.store.dispatch(EmployeesActions.deleteRequest({ employeeId }));
   }
 
   openConfirmDialog(employeeId?: string) {
@@ -142,16 +101,10 @@ export class EmployeesComponent {
     });
   }
 
-  openCreateDialog(employeeId?: string) {
-    const dialogRef = this.dialog.open(EmployeeCreateDialogComponent, {
+  openManageEmployeeDialog(employeeId?: string) {
+    this.dialog.open(EmployeeCreateDialogComponent, {
       width: '650px',
       data: employeeId,
-    });
-
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        this.dataService.fetchEmployees();
-      }
     });
   }
 
