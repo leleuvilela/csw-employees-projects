@@ -1,28 +1,14 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import {
-  BehaviorSubject,
-  Observable,
-  catchError,
-  combineLatest,
-  map,
-  of,
-  switchMap,
-  tap,
-} from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatDialog } from '@angular/material/dialog';
 import { EmployeeCreateDialogComponent } from '../employee-create-dialog/employee-create-dialog.component';
-import { Employee } from '../../models/employee.model';
 import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 import { Router, RouterLink } from '@angular/router';
-import { DataService } from '../../services/data.service';
-import { EmployeeService } from '../../services/employee.service';
-import { api } from '../../models/api.model';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { Store } from '@ngrx/store';
 import { selectEmployeesPageViewModel } from '../../state/employees/employees.selectors';
 import { EmployeesActions } from '../../state/employees/employees.actions';
@@ -53,17 +39,16 @@ export class EmployeesComponent {
   ];
   loading$ = new BehaviorSubject<boolean>(false);
 
-  employeesStore$ = this.store.select(selectEmployeesPageViewModel)
+  employeesStore$ = this.store.select(selectEmployeesPageViewModel);
 
   constructor(
-    private employeeService: EmployeeService,
     private router: Router,
     private store: Store,
     public dialog: MatDialog
   ) {}
 
   ngOnInit() {
-    this.store.dispatch(EmployeesActions.loadRequest())
+    this.store.dispatch(EmployeesActions.loadRequest());
     this.store.dispatch(RolesActions.loadRequest());
     this.store.dispatch(PlatoonsActions.loadRequest());
   }

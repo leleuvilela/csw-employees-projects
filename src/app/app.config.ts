@@ -1,4 +1,4 @@
-import { ApplicationConfig } from '@angular/core';
+import { ApplicationConfig, isDevMode } from '@angular/core';
 import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
@@ -12,6 +12,7 @@ import { rolesFeature } from './state/roles/roles.reducer';
 import { RolesEffects } from './state/roles/roles.effects';
 import { platoonsFeature } from './state/platoons/platoons.reducer';
 import { PlatoonsEffects } from './state/platoons/platoons.effects';
+import { provideStoreDevtools } from '@ngrx/store-devtools';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -23,5 +24,6 @@ export const appConfig: ApplicationConfig = {
     provideState(rolesFeature),
     provideState(platoonsFeature),
     provideEffects(EmployeesEffects, RolesEffects, PlatoonsEffects),
-  ],
+    provideStoreDevtools({ maxAge: 25, logOnly: !isDevMode() })
+],
 };

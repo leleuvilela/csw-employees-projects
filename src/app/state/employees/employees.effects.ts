@@ -5,14 +5,11 @@ import {
   map,
   catchError,
   of,
-  forkJoin,
   exhaustMap,
   combineLatest,
-  tap,
+  switchMap,
 } from 'rxjs';
 import { EmployeesActions } from './employees.actions';
-import { RoleService } from '../../services/role.service';
-import { PlatoonService } from '../../services/platoon.service';
 import { api } from '../../models/api.model';
 import { Store } from '@ngrx/store';
 import { selectRoles } from '../roles/roles.reducer';
@@ -23,13 +20,14 @@ export class EmployeesEffects {
   loadEmployees$ = createEffect(() =>
     this.actions$.pipe(
       ofType(EmployeesActions.loadRequest),
-      exhaustMap(() =>
+      switchMap(() =>
         combineLatest([
           this.employeeService.getEmployees(),
           this.store.select(selectRoles),
           this.store.select(selectPlatoons),
         ]).pipe(
           map(([employees, roles, platoons]) => {
+            console.log('mas ué');
             const result = employees?.map((employee) => {
               const role =
                 roles.find((role) => role.id === employee.roleId) ||
@@ -58,8 +56,10 @@ export class EmployeesEffects {
       ofType(EmployeesActions.createRequest),
       exhaustMap(({ employee }) =>
         this.employeeService.createEmployee(employee).pipe(
-          map(() => EmployeesActions.createSuccess()),
-          tap(() => this.store.dispatch(EmployeesActions.loadRequest())),
+          switchMap(() => [
+            EmployeesActions.createSuccess(),
+            EmployeesActions.loadRequest(),
+          ]),
           catchError(() => of(EmployeesActions.createFailure()))
         )
       )
@@ -71,9 +71,26 @@ export class EmployeesEffects {
       ofType(EmployeesActions.updateRequest),
       exhaustMap(({ employeeId, employee }) =>
         this.employeeService.updateEmployee(employeeId, employee).pipe(
-          map(() => EmployeesActions.updateSuccess()),
-          tap(() => this.store.dispatch(EmployeesActions.loadRequest())),
+          switchMap(() => [
+            EmployeesActions.updateSuccess(),
+            EmployeesActions.loadRequest(),
+          ]),
           catchError(() => of(EmployeesActions.updateFailure()))
+        )
+      )
+    )
+  );
+
+  deleteEmployee$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(EmployeesActions.deleteRequest),
+      exhaustMap(({ employeeId }) =>
+        this.employeeService.deleteEmployee(employeeId).pipe(
+          switchMap(() => [
+            EmployeesActions.deleteSuccess(),
+            EmployeesActions.loadRequest(),
+          ]),
+          catchError(() => of(EmployeesActions.deleteFailure()))
         )
       )
     )
@@ -82,6 +99,6 @@ export class EmployeesEffects {
   constructor(
     private actions$: Actions,
     private store: Store,
-    private employeeService: EmployeeService,
+    private employeeService: EmployeeService
   ) {}
 }
